@@ -1,15 +1,12 @@
-import { launchCameraAsync, launchImageLibraryAsync } from "expo-image-picker";
+import {
+  launchCameraAsync,
+  launchImageLibraryAsync,
+  MediaTypeOptions,
+} from "expo-image-picker";
 import { Alert, Linking } from "react-native";
 import { RESULTS } from "react-native-permissions";
 import ImageManipulatorService from "./imageManipulatorService";
 import PermissionService from "./permissionService";
-
-/**
- * These values come from the expo-image-picker MediaType type.
- */
-const MediaTypeOptions = Object.freeze({
-  Images: "images",
-});
 
 const PHOTO_ORIGIN = {
   LIBRARY: "library",

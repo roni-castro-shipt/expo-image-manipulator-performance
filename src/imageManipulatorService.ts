@@ -1,4 +1,4 @@
-import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import FileService from "./fileService";
 
 const compressMultipleToMaxSize = (assets, options) =>
@@ -19,15 +19,15 @@ const compressToMaxSize = async (
     const newHeight = aspectRatio > 1 ? maxWidth / aspectRatio : maxHeight;
 
     const startTime = performance.now();
-    const resizedImageRef = await ImageManipulator.manipulate(uri)
-      .resize({ width: newWidth, height: newHeight })
-      .renderAsync();
-
-    const resizedImage = await resizedImageRef.saveAsync({
-      compress: quality,
-      base64: true,
-      format: SaveFormat.JPEG,
-    });
+    const resizedImage = await manipulateAsync(
+      uri,
+      [{ resize: { height: newHeight, width: newWidth } }],
+      {
+        compress: quality,
+        base64: true,
+        format: SaveFormat.JPEG,
+      }
+    );
     const endTime = performance.now();
 
     FileService.deleteFileOrDirectory(uri);

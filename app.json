@@ -18,7 +18,9 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "package": "com.anonymous.MemoryProblem"
     },
     "plugins": [
@@ -41,9 +43,13 @@
       [
         "react-native-permissions",
         {
-          "iosPermissions": ["Camera", "PhotoLibrary"]
+          "iosPermissions": [
+            "Camera",
+            "PhotoLibrary"
+          ]
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
