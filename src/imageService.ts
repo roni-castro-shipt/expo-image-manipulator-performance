@@ -1,7 +1,9 @@
 import { launchCameraAsync, launchImageLibraryAsync } from "expo-image-picker";
 import { Alert, Linking } from "react-native";
 import { RESULTS } from "react-native-permissions";
-import ImageManipulatorService from "./imageManipulatorService";
+import ImageManipulatorService, {
+  CompressResult,
+} from "./imageManipulatorService";
 import PermissionService from "./permissionService";
 
 /**
@@ -15,6 +17,7 @@ const PHOTO_ORIGIN = {
   LIBRARY: "library",
   CAMERA: "camera",
 };
+type PhotoOrigin = (typeof PHOTO_ORIGIN)[keyof typeof PHOTO_ORIGIN];
 
 const imagePickerOptions = {
   allowsMultipleSelection: false,
@@ -22,6 +25,12 @@ const imagePickerOptions = {
   exif: true,
   quality: 0.2,
   selectionLimit: 1,
+};
+
+export type ImageResult = CompressResult & {
+  uri: string;
+  photoOrigin: PhotoOrigin;
+  imageProcessingTime: number;
 };
 
 const transformOptions = (options = {}) => {
@@ -55,7 +64,7 @@ const handleCompression = (assets, options) => {
   );
 };
 
-const getFromPhotoLibrary = async (options = {}) => {
+const getFromPhotoLibrary = async (options = {}): Promise<ImageResult> => {
   try {
     await PermissionService.verifyPhotoLibPermission();
     const transformedOptions = transformOptions(options);
@@ -69,10 +78,10 @@ const getFromPhotoLibrary = async (options = {}) => {
       console.log("No assets from photo library");
       return {};
     }
-    assets = await handleCompression(assets, options);
+    const assetsCompressed = await handleCompression(assets, options);
 
     return {
-      ...assets[0],
+      ...assetsCompressed[0],
       photoOrigin: PHOTO_ORIGIN.LIBRARY,
       imageProcessingTime,
     };
@@ -96,7 +105,7 @@ const getFromPhotoLibrary = async (options = {}) => {
   }
 };
 
-const getFromCamera = async (options = {}) => {
+const getFromCamera = async (options = {}): Promise<ImageResult> => {
   const transformedOptions = transformOptions(options);
   try {
     await PermissionService.verifyCameraPermission();
@@ -110,10 +119,10 @@ const getFromCamera = async (options = {}) => {
       return {};
     }
 
-    assets = await handleCompression(assets, options);
+    const assetsCompressed = await handleCompression(assets, options);
 
     return {
-      ...assets[0],
+      ...assetsCompressed[0],
       photoOrigin: PHOTO_ORIGIN.CAMERA,
       imageProcessingTime,
     };

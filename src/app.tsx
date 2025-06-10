@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { Button, Image, Text, View } from "react-native";
+import {
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import FileService from "./fileService";
-import ImagePickerService from "./imageService";
+import ImagePickerService, { ImageResult } from "./imageService";
+import Utils from "./utils";
 
 export default function App() {
-  const [imageData, setImageData] = useState(null);
+  const [imageData, setImageData] = useState<ImageResult | null>(null);
 
   const handleTakePhoto = async () => {
     const result = await ImagePickerService.getFromCamera({
@@ -26,11 +34,13 @@ export default function App() {
   };
 
   const totalTime =
-    imageData?.totalCompressionTime + imageData?.imageProcessingTime || 0;
+    imageData?.compressionManipulateTime +
+      imageData?.compressionSaveSyncTime +
+      imageData?.imageProcessingTime || 0;
 
   return (
-    <View
-      style={{
+    <ScrollView
+      contentContainerStyle={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
@@ -39,25 +49,52 @@ export default function App() {
     >
       <Button title="Take photo" onPress={handleTakePhoto} />
       <Button title="Load from gallery" onPress={handleLoadPhotoFromGallery} />
-      {!!imageData && imageData.uri && (
+      {!!imageData?.uri && (
         <Image
           style={{ width: 300, aspectRatio: 1 }}
           source={{ uri: imageData.uri }}
         />
       )}
-      {!!imageData && imageData.totalCompressionTime && (
-        <Text>
-          Total compression time:{" "}
-          {(imageData.totalCompressionTime / 1000).toFixed(2)}s
-        </Text>
-      )}
-      {!!imageData && imageData.imageProcessingTime && (
-        <Text>
-          Image pick/processing time:{" "}
-          {(imageData.imageProcessingTime / 1000).toFixed(2)}s
-        </Text>
-      )}
-      {!!totalTime && <Text>Total time: {(totalTime / 1000).toFixed(2)}s</Text>}
-    </View>
+      <View style={{ gap: 8 }}>
+        {!!imageData?.imageProcessingTime && (
+          <Text style={s.timeTitle}>
+            Image pick/processing time:{" "}
+            {Utils.formatTimeToSeconds(imageData.imageProcessingTime)}
+          </Text>
+        )}
+        {!!imageData?.compressionManipulateTime &&
+          !!imageData.compressionSaveSyncTime && (
+            <Text style={s.timeTitle}>
+              Total compress time:{" "}
+              {Utils.formatTimeToSeconds(
+                imageData.compressionManipulateTime +
+                  imageData.compressionSaveSyncTime
+              )}
+              <Text style={s.timeSubTitle}>
+                {"\n"} • ManipulateSync:{" "}
+                {Utils.formatTimeToSeconds(imageData.compressionManipulateTime)}
+              </Text>
+              <Text style={s.timeSubTitle}>
+                {"\n"} • SaveSync:{" "}
+                {Utils.formatTimeToSeconds(imageData.compressionSaveSyncTime)}
+              </Text>
+            </Text>
+          )}
+        {!!totalTime && (
+          <Text style={s.timeTitle}>
+            Total time: {Utils.formatTimeToSeconds(totalTime)}
+          </Text>
+        )}
+      </View>
+    </ScrollView>
   );
 }
+
+const s = StyleSheet.create({
+  timeTitle: {
+    fontWeight: "bold",
+  },
+  timeSubTitle: {
+    fontWeight: "normal",
+  },
+});
