@@ -32,7 +32,7 @@ const compressToMaxSize = async (
 
     FileService.deleteFileOrDirectory(uri);
 
-    const executionTime = ((endTime - startTime) / 1000).toFixed(2);
+    const executionTime = endTime - startTime;
     return {
       totalCompressionTime: executionTime,
       ...resizedImage,

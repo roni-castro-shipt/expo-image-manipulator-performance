@@ -59,7 +59,10 @@ const getFromPhotoLibrary = async (options = {}) => {
   try {
     await PermissionService.verifyPhotoLibPermission();
     const transformedOptions = transformOptions(options);
+    const startTime = performance.now();
     const response = await launchImageLibraryAsync(transformedOptions);
+    const endTime = performance.now();
+    const imageProcessingTime = endTime - startTime;
 
     let { assets } = response;
     if (!assets) {
@@ -68,7 +71,11 @@ const getFromPhotoLibrary = async (options = {}) => {
     }
     assets = await handleCompression(assets, options);
 
-    return { ...assets[0], photoOrigin: PHOTO_ORIGIN.LIBRARY };
+    return {
+      ...assets[0],
+      photoOrigin: PHOTO_ORIGIN.LIBRARY,
+      imageProcessingTime,
+    };
   } catch (error) {
     if (error === RESULTS.BLOCKED || error === RESULTS.DENIED) {
       Alert.alert(
@@ -93,7 +100,10 @@ const getFromCamera = async (options = {}) => {
   const transformedOptions = transformOptions(options);
   try {
     await PermissionService.verifyCameraPermission();
+    const startTime = performance.now();
     const response = await launchCameraAsync(transformedOptions);
+    const endTime = performance.now();
+    const imageProcessingTime = endTime - startTime;
 
     let { assets } = response;
     if (!assets) {
@@ -102,7 +112,11 @@ const getFromCamera = async (options = {}) => {
 
     assets = await handleCompression(assets, options);
 
-    return { ...assets[0], photoOrigin: PHOTO_ORIGIN.CAMERA };
+    return {
+      ...assets[0],
+      photoOrigin: PHOTO_ORIGIN.CAMERA,
+      imageProcessingTime,
+    };
   } catch (error) {
     if (error === RESULTS.BLOCKED || error === RESULTS.DENIED) {
       Alert.alert(

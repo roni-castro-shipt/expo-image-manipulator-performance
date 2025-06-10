@@ -25,6 +25,9 @@ export default function App() {
     setImageData(result);
   };
 
+  const totalTime =
+    imageData?.totalCompressionTime + imageData?.imageProcessingTime || 0;
+
   return (
     <View
       style={{
@@ -43,8 +46,18 @@ export default function App() {
         />
       )}
       {!!imageData && imageData.totalCompressionTime && (
-        <Text>Total compression time: {imageData.totalCompressionTime}s</Text>
+        <Text>
+          Total compression time:{" "}
+          {(imageData.totalCompressionTime / 1000).toFixed(2)}s
+        </Text>
       )}
+      {!!imageData && imageData.imageProcessingTime && (
+        <Text>
+          Image pick/processing time:{" "}
+          {(imageData.imageProcessingTime / 1000).toFixed(2)}s
+        </Text>
+      )}
+      {!!totalTime && <Text>Total time: {(totalTime / 1000).toFixed(2)}s</Text>}
     </View>
   );
 }
