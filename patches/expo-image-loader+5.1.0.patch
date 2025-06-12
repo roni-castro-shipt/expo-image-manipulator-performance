@@ -1,0 +1,48 @@
+diff --git a/node_modules/expo-image-loader/android/src/main/java/expo/modules/imageloader/ImageLoaderModule.kt b/node_modules/expo-image-loader/android/src/main/java/expo/modules/imageloader/ImageLoaderModule.kt
+index 681341f..1b8db90 100644
+--- a/node_modules/expo-image-loader/android/src/main/java/expo/modules/imageloader/ImageLoaderModule.kt
++++ b/node_modules/expo-image-loader/android/src/main/java/expo/modules/imageloader/ImageLoaderModule.kt
+@@ -5,6 +5,7 @@ import android.graphics.Bitmap
+ import android.graphics.drawable.Drawable
+ import com.bumptech.glide.Glide
+ import com.bumptech.glide.load.engine.DiskCacheStrategy
++import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
+ import com.bumptech.glide.request.target.CustomTarget
+ import com.bumptech.glide.request.transition.Transition
+ import expo.modules.core.interfaces.InternalModule
+@@ -79,6 +80,8 @@ class ImageLoaderModule(val context: Context) : InternalModule, ImageLoaderInter
+       .diskCacheStrategy(DiskCacheStrategy.NONE)
+       .skipMemoryCache(true)
+       .load(normalizedUrl)
++      .downsample(DownsampleStrategy.CENTER_INSIDE)
++      .override(2048, 2048)
+       .into(object : CustomTarget<Bitmap>() {
+         override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+           resultListener.onSuccess(resource)
+diff --git a/node_modules/expo-image-loader/ios/EXImageLoader/EXImageLoader.m b/node_modules/expo-image-loader/ios/EXImageLoader/EXImageLoader.m
+index 29674b4..496a893 100644
+--- a/node_modules/expo-image-loader/ios/EXImageLoader/EXImageLoader.m
++++ b/node_modules/expo-image-loader/ios/EXImageLoader/EXImageLoader.m
+@@ -32,10 +32,18 @@ EX_REGISTER_MODULE();
+ - (void)loadImageForURL:(NSURL *)imageURL
+       completionHandler:(EXImageLoaderCompletionBlock)completionHandler
+ {
+-  [[_bridge moduleForName:@"ImageLoader" lazilyLoadIfNecessary:YES] loadImageWithURLRequest:[NSURLRequest requestWithURL:imageURL]
+-                                                                  callback:^(NSError *error, UIImage *loadedImage) {
+-                                                                    completionHandler(error, loadedImage);
+-                                                                  }];
++  id<RCTImageLoaderProtocol> imageLoader = [_bridge moduleForName:@"ImageLoader" lazilyLoadIfNecessary:YES];
++  
++  [imageLoader loadImageWithURLRequest:[NSURLRequest requestWithURL:imageURL]
++                                   size:CGSizeMake(2048, 2048)
++                                  scale:1
++                                clipped:NO
++                             resizeMode:RCTResizeModeContain
++                          progressBlock:nil
++                       partialLoadBlock:nil
++                        completionBlock:^(NSError *error, UIImage *loadedImage) {
++      completionHandler(error, loadedImage);
++    }];
+ }
+ 
+ @end
